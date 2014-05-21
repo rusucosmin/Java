@@ -3,6 +3,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTextPane;
 
@@ -12,7 +13,13 @@ import javax.swing.JTextPane;
  */
 
 public class jFrame extends javax.swing.JFrame {
-    public static final String chooseMessage = "Choose a file or a folder";
+    public static final String chooseMessage = "Choose a source file and a destination folder";
+    public static final String readyToCopyMessage = "Ready to copy - Press Move to start";
+    public static final String runningMessage = "Copying...";
+    public static final String pauseMessage = "Pause...";
+    public static final String stoppedMessage = "Stopped...";
+    
+    public CopyTask copyTask;
 
     /**
      * Creates new form jFrame
@@ -20,6 +27,7 @@ public class jFrame extends javax.swing.JFrame {
     public jFrame() {
         super("Cosmin Rusu");
         initComponents();
+        copyTask = null;
         fromOpenButton.addActionListener(new openActionListener(this.fromPath));
         toOpenButton.addActionListener(new openActionListener(this.toPath));
         moveButton.addActionListener(new moveActionListener(this.fromPath, this.toPath));
@@ -44,6 +52,10 @@ public class jFrame extends javax.swing.JFrame {
         toOpenButton = new javax.swing.JButton();
         moveButton = new javax.swing.JButton();
         jProgressBar = new javax.swing.JProgressBar();
+        statusLabel = new javax.swing.JLabel();
+        interruptButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
+        detailLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -63,57 +75,114 @@ public class jFrame extends javax.swing.JFrame {
 
         moveButton.setText("Move");
 
+        jProgressBar.setStringPainted(true);
+
+        statusLabel.setText(chooseMessage);
+
+        interruptButton.setText("Pause");
+        interruptButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interruptButtonActionPerformed(evt);
+            }
+        });
+        interruptButton.setVisible(false);
+
+        stopButton.setText("Stop");
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
+        stopButton.setVisible(false);
+
+        detailLabel.setText("detailLabel");
+        detailLabel.setVisible(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(158, 158, 158)
-                .addComponent(moveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(327, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jProgressBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addComponent(statusLabel)
+                        .addGap(233, 233, 233)
+                        .addComponent(detailLabel)
+                        .addGap(0, 304, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(toOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(fromLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(toLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(fromOpenButton, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(toOpenButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                            .addComponent(fromOpenButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(moveButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jScrollPane4)
-                            .addComponent(jScrollPane3))))
-                .addGap(24, 24, 24))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(interruptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addComponent(fromLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane4)
                     .addComponent(fromOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(toLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(toOpenButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toOpenButton)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(moveButton)
+                            .addComponent(interruptButton)
+                            .addComponent(stopButton)))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(117, 117, 117)
-                .addComponent(moveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(70, 70, 70)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(117, 117, 117))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusLabel)
+                    .addComponent(detailLabel))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void interruptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interruptButtonActionPerformed
+        if(copyTask == null)
+            return;
+        if(copyTask.getStart() == false)
+            return;
+        copyTask.setPause(copyTask.getPause() ^ true);
+        if(copyTask.getPause() == true)
+            statusLabel.setText(pauseMessage);
+        else statusLabel.setText(runningMessage);
+    }//GEN-LAST:event_interruptButtonActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        if(copyTask == null)
+            return;            
+        if(copyTask.getStart() == false)
+            return;
+        statusLabel.setText(stoppedMessage);
+        copyTask.cancel(true);
+    }//GEN-LAST:event_stopButtonActionPerformed
+
+    
     /**
      * @param args the command line arguments
      */
@@ -168,8 +237,12 @@ public class jFrame extends javax.swing.JFrame {
             JFileChooser jFileChooser = new JFileChooser();
             jFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             int jFileChooserValue = jFileChooser.showOpenDialog(jFrame.this);
-            if(jFileChooserValue == JFileChooser.APPROVE_OPTION)
+            if(jFileChooserValue == JFileChooser.APPROVE_OPTION) {
                 filePath.setText(jFileChooser.getSelectedFile().toString());
+                if(!filePath.getText().equals(chooseMessage) && !toPath.getText().equals(chooseMessage))
+                    statusLabel.setText(readyToCopyMessage);
+                else statusLabel.setText(chooseMessage);
+            }
         }
         
     }
@@ -184,10 +257,19 @@ public class jFrame extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             if(Source.getText().equals(chooseMessage) || chooseMessage.equals(Target.getText()))
                 return;
+            if(copyTask != null)
+                if(copyTask.getStart() == true)
+                    return;
+            stopButton.setVisible(true);
+            interruptButton.setVisible(true);
+            statusLabel.setText(runningMessage);
+            
             jProgressBar.setValue(0);
-            CopyTask copyTask = new CopyTask(new File(Source.getText()), new File(Target.getText()));
+            copyTask = new CopyTask(new File(Source.getText()), new File(Target.getText()), detailLabel, stopButton, interruptButton);
             copyTask.addPropertyChangeListener(this);
+            
             copyTask.execute();
+            
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -199,13 +281,17 @@ public class jFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel detailLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JButton fromOpenButton;
     private javax.swing.JTextPane fromPath;
+    private javax.swing.JButton interruptButton;
     private javax.swing.JProgressBar jProgressBar;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JButton moveButton;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JButton stopButton;
     private javax.swing.JLabel toLabel;
     private javax.swing.JButton toOpenButton;
     private javax.swing.JTextPane toPath;
