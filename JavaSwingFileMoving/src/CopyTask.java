@@ -25,7 +25,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     
     public CopyTask(File _Source, File _Target, JLabel _statusLabel, JButton _stopButton, JButton _inBtn) {
         Source = _Source;
-        Target = new File(_Target.toString() + "/" +  _Source.getName() + " bytes ");
+        Target = new File(_Target.toString() + "/" +  _Source.getName());
         statusLabel = _statusLabel;
         pause = false;
         start = false;
@@ -65,8 +65,10 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         
         statusLabel.setVisible(false);
         
-        if(isCancelled())
+        if(isCancelled()) {
             setProgress(0);
+            Target.delete();
+        }
         else setProgress(100);
     }
     
@@ -90,7 +92,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             bos.write(buff, 0, length);
             soFar += length;
             setProgress((int)(100 * ((double)soFar/totalBytes)));
-            statusLabel.setText(String.valueOf(soFar) + " / " + String.valueOf(totalBytes));
+            statusLabel.setText(String.valueOf(soFar) + " / " + String.valueOf(totalBytes) + " bytes");
         }
         bis.close();
         bos.close();
