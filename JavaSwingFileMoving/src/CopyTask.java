@@ -18,10 +18,11 @@ import javax.swing.SwingWorker;
 public class CopyTask extends SwingWorker<Void, Integer> {
     private final File Source, Target;
     private final JLabel statusLabel;
-    private JButton stopButton, pauseButton;
-    private long totalBytes;
+    private final JButton stopButton, pauseButton;
+    
     private boolean pause;
     private boolean start;
+    private long totalBytes;
     
     public CopyTask(File _Source, File _Target, JLabel _statusLabel, JButton _stopButton, JButton _inBtn) {
         Source = _Source;
@@ -44,6 +45,9 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     }
     public void setStart(boolean x) {
         this.start = x;
+    }
+    public long getTotatlBytes() {
+        return totalBytes;
     }
     
     @Override
@@ -92,7 +96,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             bos.write(buff, 0, length);
             soFar += length;
             setProgress((int)(100 * ((double)soFar/totalBytes)));
-            statusLabel.setText(String.valueOf(soFar) + " / " + String.valueOf(totalBytes) + " bytes");
+            //statusLabel.setText(String.valueOf(soFar) + " / " + String.valueOf(totalBytes) + " bytes");
         }
         bis.close();
         bos.close();
