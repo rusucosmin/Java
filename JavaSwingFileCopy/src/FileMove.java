@@ -174,9 +174,14 @@ public class FileMove extends javax.swing.JFrame {
         if(copyTask.getStart() == false)
             return;
         copyTask.setPause(copyTask.getPause() ^ true);
-        if(copyTask.getPause() == true)
+        if(copyTask.getPause() == true) {
             statusLabel.setText(pauseMessage);
-        else statusLabel.setText(runningMessage);
+            interruptButton.setText("Resume");
+        }
+        else {
+            statusLabel.setText(runningMessage);
+            interruptButton.setText("Pause");
+        }
         ////pauseController.flipState();        
     }//GEN-LAST:event_interruptButtonActionPerformed
 
@@ -269,13 +274,21 @@ public class FileMove extends javax.swing.JFrame {
             if(copyTask != null)
                 if(copyTask.getStart() == true)
                     return;
+            File sourceFile = new File(Source.getText());
+            File targetFile = new File(Target.getText());
+            
+            if(!sourceFile.exists())
+                return;
+            if(!targetFile.exists())
+                targetFile.mkdirs();
+            
             stopButton.setVisible(true);
             interruptButton.setVisible(true);
             statusLabel.setText(runningMessage);
             jProgressBar.setValue(0);
             ////pauseController = new PauseController();
             
-            copyTask = new CopyTask(new File(Source.getText()), new File(Target.getText()), detailLabel, 
+            copyTask = new CopyTask(sourceFile, targetFile, detailLabel, 
                     stopButton, interruptButton);
             copyTask.addPropertyChangeListener(this);
             copyTask.execute();

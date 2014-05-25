@@ -57,6 +57,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         statusLabel.setVisible(true);
         start = true;
         totalBytes = getTotalBytes(Source);
+        
         copyFile(Source, Target);
         return null;
     }
