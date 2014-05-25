@@ -318,9 +318,10 @@ public class FileMove extends javax.swing.JFrame {
                 if(unitPerSecond >= 1024) {
                     unit = "Gb";
                     unitPerSecond /= 1024;
-                }   
-                detailLabel.setText(detailLabel.getText() + " ( " + String.format("%." + 2 + "f", unitPerSecond) + " " + unit + " / sec ) ");
-
+                }
+                if(unitPerSecond > 0)
+                    detailLabel.setText(detailLabel.getText() + " ( " + String.format("%." + 2 + "f", unitPerSecond) + " " + unit + " / sec ) ");
+                
                 jProgressBar.setValue(progress);
                 stopWatch.start(soFar);
             }
