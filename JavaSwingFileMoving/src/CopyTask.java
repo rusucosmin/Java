@@ -19,10 +19,10 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     private final File Source, Target;
     private final JLabel statusLabel;
     private final JButton stopButton, pauseButton;
-    
     private boolean pause;
     private boolean start;
     private long totalBytes;
+    ////private PauseController pauseController;
     
     public CopyTask(File _Source, File _Target, JLabel _statusLabel, JButton _stopButton, JButton _inBtn) {
         Source = _Source;
@@ -32,6 +32,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         start = false;
         stopButton = _stopButton;
         pauseButton = _inBtn;
+        ///pauseController = _pauseController;
     }
     
     public boolean getPause() {
@@ -77,7 +78,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     }
     
     private long getTotalBytes(File file) {
-        //// TODO - if file is a directory run throw all it's subdirectories and get the 
+        // TODO - if file is a directory run throw all it's subdirectories and get the 
         //// sum of all the leaf's
         //// but now it is guaranteed that file is a leaf
         return file.length();
@@ -91,12 +92,17 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         while((length = bis.read(buff)) > 0) {
             while(pause && !isCancelled())
                 Thread.sleep(25);
-            if(isCancelled())
-                return; 
+            // TODO - use PauseController class
+            ////pauseController.checkState();
+            if(isCancelled()) {
+                bis.close();
+                bos.close();
+                publish(0);
+                return;
+            }
             bos.write(buff, 0, length);
             soFar += length;
             setProgress((int)(100 * ((double)soFar/totalBytes)));
-            //statusLabel.setText(String.valueOf(soFar) + " / " + String.valueOf(totalBytes) + " bytes");
         }
         bis.close();
         bos.close();

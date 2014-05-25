@@ -3,7 +3,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTextPane;
 
@@ -12,7 +11,7 @@ import javax.swing.JTextPane;
  * @author rusucosmin
  */
 
-public class jFrame extends javax.swing.JFrame {
+public class FileMove extends javax.swing.JFrame {
     public static final String chooseMessage = "Choose a source file and a destination folder";
     public static final String readyToCopyMessage = "Ready to copy - Press Move to start";
     public static final String runningMessage = "Copying...";
@@ -20,16 +19,15 @@ public class jFrame extends javax.swing.JFrame {
     public static final String stoppedMessage = "Stopped...";
     
     public CopyTask copyTask;
-    
+    ////public PauseController pauseController;
+    public StopWatch stopWatch; 
     public long sourceSize;
 
-    /**
-     * Creates new form jFrame
-     */
-    public jFrame() {
+    public FileMove() {
         super("Cosmin Rusu");
         initComponents();
         copyTask = null;
+        stopWatch = new StopWatch();
         fromOpenButton.addActionListener(new openActionListener(this.fromPath));
         toOpenButton.addActionListener(new openActionListener(this.toPath));
         moveButton.addActionListener(new moveActionListener(this.fromPath, this.toPath));
@@ -67,7 +65,9 @@ public class jFrame extends javax.swing.JFrame {
         fromLabel.setText("From:");
 
         fromPath.setText(chooseMessage);
+        fromPath.setToolTipText("Click Choose or insert the path");
         jScrollPane4.setViewportView(fromPath);
+        fromPath.getAccessibleContext().setAccessibleName("");
 
         toLabel.setText("To:");
 
@@ -82,6 +82,7 @@ public class jFrame extends javax.swing.JFrame {
 
         moveButton.setText("Move");
 
+        jProgressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         jProgressBar.setStringPainted(true);
 
         statusLabel.setText(chooseMessage);
@@ -176,6 +177,7 @@ public class jFrame extends javax.swing.JFrame {
         if(copyTask.getPause() == true)
             statusLabel.setText(pauseMessage);
         else statusLabel.setText(runningMessage);
+        ////pauseController.flipState();        
     }//GEN-LAST:event_interruptButtonActionPerformed
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
@@ -185,13 +187,13 @@ public class jFrame extends javax.swing.JFrame {
             return;
         statusLabel.setText(stoppedMessage);
         copyTask.cancel(true);
+        ////pauseController.refresh();        
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void toOpenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toOpenButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_toOpenButtonActionPerformed
 
-    
     /**
      * @param args the command line arguments
      */
@@ -209,13 +211,13 @@ public class jFrame extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(jFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(jFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(jFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(jFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -223,13 +225,11 @@ public class jFrame extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new jFrame().setVisible(true);
+                new FileMove().setVisible(true);
             }
         });
     }
-    /**
-     *  TODO
-     */
+    
     public class openActionListener implements ActionListener {
         public JTextPane filePath;
         
@@ -245,7 +245,7 @@ public class jFrame extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             JFileChooser jFileChooser = new JFileChooser();
             jFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            int jFileChooserValue = jFileChooser.showOpenDialog(jFrame.this);
+            int jFileChooserValue = jFileChooser.showOpenDialog(FileMove.this);
             if(jFileChooserValue == JFileChooser.APPROVE_OPTION) {
                 filePath.setText(jFileChooser.getSelectedFile().toString());
                 if(!filePath.getText().equals(chooseMessage) && !toPath.getText().equals(chooseMessage))
@@ -253,8 +253,8 @@ public class jFrame extends javax.swing.JFrame {
                 else statusLabel.setText(chooseMessage);
             }
         }
-        
     }
+    
     public class moveActionListener implements ActionListener, PropertyChangeListener {
         public JTextPane Source, Target;
         public moveActionListener(JTextPane _Source, JTextPane _Target) {
@@ -272,27 +272,30 @@ public class jFrame extends javax.swing.JFrame {
             stopButton.setVisible(true);
             interruptButton.setVisible(true);
             statusLabel.setText(runningMessage);
-            
             jProgressBar.setValue(0);
-            copyTask = new CopyTask(new File(Source.getText()), new File(Target.getText()), detailLabel, stopButton, interruptButton);
-            copyTask.addPropertyChangeListener(this);
+            ////pauseController = new PauseController();
             
+            copyTask = new CopyTask(new File(Source.getText()), new File(Target.getText()), detailLabel, 
+                    stopButton, interruptButton);
+            copyTask.addPropertyChangeListener(this);
             copyTask.execute();
+            stopWatch.start(0);
         }
+        
         public String getRemainingBytes(long _reference) {
-            ///String.format("%." + precision + "f\n", my_double);
             /// test for GB's
             if(_reference > 1024 * 1024 * 1024)    
-                return String.format("%." + 3 + "f", 1.0 * _reference / (1024 * 1024 * 1024)) + " Gb";
+                return String.format("%." + 2 + "f", 1.0 * _reference / (1024 * 1024 * 1024)) + " Gb";
             /// test for MB's
             if(_reference > 1024 * 1024)
-                return String.format("%." + 3 + "f", 1.0 * _reference / (1024 * 1024) )+ " Mb";
+                return String.format("%." + 2 + "f", 1.0 * _reference / (1024 * 1024) )+ " Mb";
             /// test for KB's
             if(_reference > 1024)
-                return String.format("%." + 3 + "f", 1.0 * _reference / 1024) + " Kb";
+                return String.format("%." + 2 + "f", 1.0 * _reference / 1024) + " Kb";
             /// test for B's
             return String.valueOf(_reference) + " Bytes";
         }
+        
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if("progress".equals(evt.getPropertyName())) {
@@ -302,7 +305,24 @@ public class jFrame extends javax.swing.JFrame {
                 
                 detailLabel.setText(getRemainingBytes(soFar) + " of " + getRemainingBytes(lengthBytes));
                 
+                double unitPerSecond = stopWatch.getInstantSpeed(soFar);
+                String unit = "Bytes";
+                if(unitPerSecond >= 1024) {
+                    unit = "Kb";
+                    unitPerSecond /= 1024;
+                }
+                if(unitPerSecond >= 1024) {
+                    unit = "Mb";
+                    unitPerSecond /= 1024;
+                }
+                if(unitPerSecond >= 1024) {
+                    unit = "Gb";
+                    unitPerSecond /= 1024;
+                }   
+                detailLabel.setText(detailLabel.getText() + " ( " + String.format("%." + 2 + "f", unitPerSecond) + " " + unit + " / sec ) ");
+
                 jProgressBar.setValue(progress);
+                stopWatch.start(soFar);
             }
         }
     }
