@@ -50,13 +50,20 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     public long getTotatlBytes() {
         return totalBytes;
     }
+    private long getTotalBytes(File file) {
+        // TODO - if file is a directory run throw all it's subdirectories and get the 
+        //// sum of all the leaf's
+        //// but now it is guaranteed that file is a leaf
+        return file.length();
+    }
     
     @Override
     protected Void doInBackground() throws Exception {
-        setProgress(0);
-        statusLabel.setVisible(true);
         start = true;
+        statusLabel.setVisible(true);
         totalBytes = getTotalBytes(Source);
+        
+        setProgress(0);
         
         copyFile(Source, Target);
         return null;
@@ -68,7 +75,6 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         
         stopButton.setVisible(false);
         pauseButton.setVisible(false);
-        
         statusLabel.setVisible(false);
         
         if(isCancelled()) {
@@ -78,12 +84,6 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         else setProgress(100);
     }
     
-    private long getTotalBytes(File file) {
-        // TODO - if file is a directory run throw all it's subdirectories and get the 
-        //// sum of all the leaf's
-        //// but now it is guaranteed that file is a leaf
-        return file.length();
-    }
     private void copyFile(File source, File target) throws FileNotFoundException, IOException, InterruptedException {
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(target));
@@ -98,16 +98,19 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             if(isCancelled()) {
                 bis.close();
                 bos.close();
-                publish(0);
+                
+                setProgress(0);
+                
                 return;
             }
             bos.write(buff, 0, length);
             soFar += length;
-            setProgress((int)(100 * ((double)soFar/totalBytes)));
+            if(!isCancelled())
+                setProgress((int)(100 * ((double)soFar/totalBytes)));
         }
         bis.close();
         bos.close();
         
-        publish(100);
+        setProgress(100);
     }
 }
