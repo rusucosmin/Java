@@ -22,6 +22,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     private boolean pause;
     private boolean start;
     private long totalBytes;
+    private long startTime;
     ////private PauseController pauseController;
     
     public CopyTask(File _Source, File _Target, JLabel _statusLabel, JButton _stopButton, JButton _inBtn) {
@@ -56,9 +57,23 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         //// but now it is guaranteed that file is a leaf
         return file.length();
     }
+    public String getTimeElapsed() {
+        String ret = "";
+        long timeElapsed = System.currentTimeMillis() - startTime;
+        timeElapsed /= 1000; /// show in seconds
+        if(timeElapsed / 3600 > 0)
+            ret += String.valueOf(timeElapsed / 3600) + " h : ";
+        if(timeElapsed / 60 > 0)
+            ret += String.valueOf(timeElapsed / 60) + " m : ";
+        if(timeElapsed % 60 > 0)
+            ret += String.valueOf(timeElapsed % 60) + " s ";
+        return ret;
+    }
     
     @Override
     protected Void doInBackground() throws Exception {
+        startTime = System.currentTimeMillis();
+        
         start = true;
         statusLabel.setVisible(true);
         totalBytes = getTotalBytes(Source);
@@ -81,7 +96,9 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             setProgress(0);
             Target.delete();
         }
-        else setProgress(100);
+        else {
+            setProgress(100);
+        }
     }
     
     private void copyFile(File source, File target) throws FileNotFoundException, IOException, InterruptedException {
@@ -98,9 +115,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             if(isCancelled()) {
                 bis.close();
                 bos.close();
-                
                 setProgress(0);
-                
                 return;
             }
             bos.write(buff, 0, length);

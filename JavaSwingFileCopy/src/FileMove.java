@@ -102,12 +102,14 @@ public class FileMove extends javax.swing.JFrame {
 
         fromPath.setText(chooseMessage);
         fromPath.setToolTipText("Click Choose or insert the path");
+        fromPath.setPreferredSize(new java.awt.Dimension(84, 23));
         jScrollPane1.setViewportView(fromPath);
         fromPath.getAccessibleContext().setAccessibleName("");
 
         jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         toPath.setText(chooseMessage);
+        toPath.setPreferredSize(new java.awt.Dimension(84, 23));
         jScrollPane2.setViewportView(toPath);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -126,19 +128,17 @@ public class FileMove extends javax.swing.JFrame {
                             .addComponent(toOpenButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(moveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(interruptButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 497, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 497, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jScrollPane1)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(statusLabel)
                         .addGap(229, 229, 229)
-                        .addComponent(detailLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(detailLabel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -147,30 +147,27 @@ public class FileMove extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(fromLabel)
                 .addGap(0, 0, 0)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fromOpenButton)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(fromOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addGap(14, 14, 14)
                 .addComponent(toLabel)
                 .addGap(0, 0, 0)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(toOpenButton)
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(moveButton)
-                            .addComponent(interruptButton)
-                            .addComponent(stopButton))
-                        .addGap(12, 12, 12)
-                        .addComponent(jProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(statusLabel)
-                            .addComponent(detailLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2)
+                    .addComponent(toOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(moveButton)
+                    .addComponent(interruptButton)
+                    .addComponent(stopButton))
+                .addGap(12, 12, 12)
+                .addComponent(jProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusLabel)
+                    .addComponent(detailLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
         pack();
@@ -277,19 +274,30 @@ public class FileMove extends javax.swing.JFrame {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(Source.getText().equals(chooseMessage) || chooseMessage.equals(Target.getText()))
+            if(Source.getText().equals(chooseMessage) || chooseMessage.equals(Target.getText())) {
+                statusLabel.setText("Choose a file and a directory");
                 return;
+            }
             if(copyTask != null)
                 if(copyTask.getStart() == true)
                     return;
             File sourceFile = new File(Source.getText());
             File targetFile = new File(Target.getText());
             
-            if(!sourceFile.exists())
+            if(!sourceFile.exists()) {
+                statusLabel.setText("Source File does not exist!");
                 return;
+            }
+            if(!sourceFile.isFile()) {
+                statusLabel.setText("Source File is not a file!");
+                return;
+            }
             if(!targetFile.exists())
                 targetFile.mkdirs();
-            
+            if(!targetFile.isDirectory()) {
+                statusLabel.setText("Target is not a directory");
+                return;
+            }
             stopButton.setVisible(true);
             interruptButton.setVisible(true);
             statusLabel.setText(runningMessage);
@@ -323,6 +331,10 @@ public class FileMove extends javax.swing.JFrame {
                 int progress = (Integer) evt.getNewValue();
                 long lengthBytes = copyTask.getTotatlBytes();
                 long soFar = lengthBytes * progress / 100L;
+                
+                if(progress == 100) {
+                    statusLabel.setText("Finished Copy Task!");
+                }
                 
                 detailLabel.setText(getRemainingBytes(soFar) + " of " + getRemainingBytes(lengthBytes));
                 
