@@ -335,10 +335,7 @@ public class FileCopy extends javax.swing.JFrame {
                 int progress = (Integer) evt.getNewValue();
                 long lengthBytes = copyTask.getTotatlBytes();
                 long soFar = lengthBytes * progress / 100L;
-                
-                if(progress == 100)
-                    statusLabel.setText("Finished Copy Task!");
-                
+               
                 detailLabel.setText(getRemainingBytes(soFar) + " of " + getRemainingBytes(lengthBytes));
                 
                 double unitPerSecond = stopWatch.getInstantSpeed(soFar);
@@ -358,6 +355,8 @@ public class FileCopy extends javax.swing.JFrame {
                 if(unitPerSecond > 0)
                     detailLabel.setText(detailLabel.getText() + " ( " + String.format("%." + 2 + "f", unitPerSecond) + " " + unit + " / sec ) ");
                 
+                if(progress == 100)
+                    statusLabel.setText("Finished Copy Task!");
                 jProgressBar.setValue(progress);
                 stopWatch.start(soFar);
             }

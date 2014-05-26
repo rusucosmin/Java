@@ -69,21 +69,6 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         copyFile(Source, Target);
         return null;
     }
-    @Override
-    public void done() {
-        pause = false;
-        start = false;
-        
-        stopButton.setVisible(false);
-        pauseButton.setVisible(false);
-        statusLabel.setVisible(false);
-        
-        if(isCancelled()) {
-            setProgress(0);
-            Target.delete();
-        }
-        else setProgress(100);
-    }
     
     private void copyFile(File source, File target) throws FileNotFoundException, IOException, InterruptedException {
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
@@ -92,14 +77,20 @@ public class CopyTask extends SwingWorker<Void, Integer> {
         long soFar = 0L;
         int length;
         while((length = bis.read(buff)) > 0) {
-            //while(pause && !isCancelled())
-            //    Thread.sleep(25);
-            // TODO - use PauseController class
             pauseController.checkState();
             if(isCancelled()) {
+                stopButton.setVisible(false);
+                pauseButton.setVisible(false);
+                statusLabel.setVisible(false);
+                pause = false;
+                start = false;
+                setProgress(0);
+                Target.delete();
+                
                 bis.close();
                 bos.close();
-                setProgress(0);
+                
+                
                 return;
             }
             bos.write(buff, 0, length);
@@ -107,9 +98,15 @@ public class CopyTask extends SwingWorker<Void, Integer> {
             if(!isCancelled())
                 setProgress((int)(100 * ((double)soFar/totalBytes)));
         }
+        
+        pause = false;
+        start = false;
+                
+        stopButton.setVisible(false);
+        pauseButton.setVisible(false);
+        statusLabel.setVisible(false);
+        
         bis.close();
         bos.close();
-        
-        setProgress(100);
     }
 }
