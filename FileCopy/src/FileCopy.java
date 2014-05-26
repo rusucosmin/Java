@@ -22,14 +22,14 @@ public class FileCopy extends javax.swing.JFrame {
     
     public CopyTask copyTask;
     public PauseController pauseController;
-    public StopWatch stopWatch; 
+    public SpeedWatch stopWatch; 
     public long sourceSize;
 
     public FileCopy() {
         super("Cosmin Rusu");
         initComponents();
         copyTask = null;
-        stopWatch = new StopWatch();
+        stopWatch = new SpeedWatch();
         fromOpenButton.addActionListener(new OpenActionListener(this.fromPath));
         toOpenButton.addActionListener(new OpenActionListener(this.toPath));
         moveButton.addActionListener(new CopyActionListener(this.fromPath, this.toPath));

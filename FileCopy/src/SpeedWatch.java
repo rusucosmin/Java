@@ -3,7 +3,7 @@
  * (instant moving speed)
  * @author rusucosmin
  */
-public class StopWatch {
+public class SpeedWatch {
     public long startTime, movedBytes;
     public void StopWatch() {
     }
