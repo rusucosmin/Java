@@ -19,7 +19,7 @@ public class FileMove extends javax.swing.JFrame {
     public static final String stoppedMessage = "Stopped...";
     
     public CopyTask copyTask;
-    ////public PauseController pauseController;
+    public PauseController pauseController;
     public StopWatch stopWatch; 
     public long sourceSize;
 
@@ -72,7 +72,7 @@ public class FileMove extends javax.swing.JFrame {
             }
         });
 
-        moveButton.setText("Move");
+        moveButton.setText("Copy");
 
         jProgressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
         jProgressBar.setStringPainted(true);
@@ -102,11 +102,11 @@ public class FileMove extends javax.swing.JFrame {
 
         fromPath.setText(chooseMessage);
         fromPath.setToolTipText("Click Choose or insert the path");
-        fromPath.setPreferredSize(new java.awt.Dimension(84, 23));
         jScrollPane1.setViewportView(fromPath);
         fromPath.getAccessibleContext().setAccessibleName("");
 
         jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(87, 26));
 
         toPath.setText(chooseMessage);
         toPath.setPreferredSize(new java.awt.Dimension(84, 23));
@@ -135,9 +135,9 @@ public class FileMove extends javax.swing.JFrame {
                                 .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1)
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(statusLabel)
-                        .addGap(229, 229, 229)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(detailLabel)))
                 .addContainerGap())
         );
@@ -150,24 +150,23 @@ public class FileMove extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(fromOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1))
-                .addGap(14, 14, 14)
+                .addGap(0, 0, 0)
                 .addComponent(toLabel)
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(toOpenButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(12, 12, 12)
+                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(moveButton)
                     .addComponent(interruptButton)
                     .addComponent(stopButton))
-                .addGap(12, 12, 12)
+                .addGap(5, 5, 5)
                 .addComponent(jProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(statusLabel)
-                    .addComponent(detailLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(26, Short.MAX_VALUE))
+                    .addComponent(detailLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         pack();
@@ -187,7 +186,7 @@ public class FileMove extends javax.swing.JFrame {
             statusLabel.setText(runningMessage);
             interruptButton.setText("Pause");
         }
-        ////pauseController.flipState();        
+        pauseController.flipState();        
     }//GEN-LAST:event_interruptButtonActionPerformed
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
@@ -196,8 +195,8 @@ public class FileMove extends javax.swing.JFrame {
         if(copyTask.getStart() == false)
             return;
         statusLabel.setText(stoppedMessage);
+        pauseController.refresh();        
         copyTask.cancel(true);
-        ////pauseController.refresh();        
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void toOpenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toOpenButtonActionPerformed
@@ -302,10 +301,10 @@ public class FileMove extends javax.swing.JFrame {
             interruptButton.setVisible(true);
             statusLabel.setText(runningMessage);
             jProgressBar.setValue(0);
-            ////pauseController = new PauseController();
+            pauseController = new PauseController();
             
             copyTask = new CopyTask(sourceFile, targetFile, detailLabel, 
-                    stopButton, interruptButton);
+                    stopButton, interruptButton, pauseController);
             copyTask.addPropertyChangeListener(this);
             copyTask.execute();
             stopWatch.start(0);
@@ -332,9 +331,8 @@ public class FileMove extends javax.swing.JFrame {
                 long lengthBytes = copyTask.getTotatlBytes();
                 long soFar = lengthBytes * progress / 100L;
                 
-                if(progress == 100) {
+                if(progress == 100)
                     statusLabel.setText("Finished Copy Task!");
-                }
                 
                 detailLabel.setText(getRemainingBytes(soFar) + " of " + getRemainingBytes(lengthBytes));
                 
