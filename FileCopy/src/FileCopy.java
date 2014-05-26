@@ -11,26 +11,28 @@ import javax.swing.JTextPane;
  * @author rusucosmin
  */
 
-public class FileMove extends javax.swing.JFrame {
+public class FileCopy extends javax.swing.JFrame {
     public static final String chooseMessage = "Choose a source file and a destination folder";
     public static final String readyToCopyMessage = "Ready to copy - Press Move to start";
     public static final String runningMessage = "Copying...";
     public static final String pauseMessage = "Pause...";
     public static final String stoppedMessage = "Stopped...";
+    public static final String emptyPath = "Please choose a file and a directory";
+    public static final String notSourceFile = "Source File does not exist!";
     
     public CopyTask copyTask;
     public PauseController pauseController;
     public StopWatch stopWatch; 
     public long sourceSize;
 
-    public FileMove() {
+    public FileCopy() {
         super("Cosmin Rusu");
         initComponents();
         copyTask = null;
         stopWatch = new StopWatch();
-        fromOpenButton.addActionListener(new openActionListener(this.fromPath));
-        toOpenButton.addActionListener(new openActionListener(this.toPath));
-        moveButton.addActionListener(new moveActionListener(this.fromPath, this.toPath));
+        fromOpenButton.addActionListener(new OpenActionListener(this.fromPath));
+        toOpenButton.addActionListener(new OpenActionListener(this.toPath));
+        moveButton.addActionListener(new CopyActionListener(this.fromPath, this.toPath));
     }
 
     /**
@@ -74,7 +76,7 @@ public class FileMove extends javax.swing.JFrame {
 
         moveButton.setText("Copy");
 
-        jProgressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        jProgressBar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jProgressBar.setStringPainted(true);
 
         statusLabel.setText(chooseMessage);
@@ -117,7 +119,7 @@ public class FileMove extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
@@ -134,17 +136,17 @@ public class FileMove extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(statusLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(detailLabel)))
-                .addContainerGap())
+                .addGap(13, 13, 13))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addComponent(fromLabel)
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -220,13 +222,13 @@ public class FileMove extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileCopy.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileCopy.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileCopy.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FileMove.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FileCopy.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -234,19 +236,22 @@ public class FileMove extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new FileMove().setVisible(true);
+                new FileCopy().setVisible(true);
             }
         });
     }
     
-    public class openActionListener implements ActionListener {
-        public JTextPane filePath;
+    /**
+     *
+     */
+    public class OpenActionListener implements ActionListener {
+        private JTextPane filePath;
         
-        public openActionListener() {
+        public OpenActionListener() {
             filePath = new JTextPane();
         }
         
-        public openActionListener(JTextPane jTextPane) {
+        public OpenActionListener(JTextPane jTextPane) {
             filePath = jTextPane;
         }
         
@@ -254,7 +259,7 @@ public class FileMove extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             JFileChooser jFileChooser = new JFileChooser();
             jFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            int jFileChooserValue = jFileChooser.showOpenDialog(FileMove.this);
+            int jFileChooserValue = jFileChooser.showOpenDialog(FileCopy.this);
             if(jFileChooserValue == JFileChooser.APPROVE_OPTION) {
                 filePath.setText(jFileChooser.getSelectedFile().toString());
                 if(!filePath.getText().equals(chooseMessage) && !toPath.getText().equals(chooseMessage))
@@ -264,9 +269,9 @@ public class FileMove extends javax.swing.JFrame {
         }
     }
     
-    public class moveActionListener implements ActionListener, PropertyChangeListener {
+    public class CopyActionListener implements ActionListener, PropertyChangeListener {
         public JTextPane Source, Target;
-        public moveActionListener(JTextPane _Source, JTextPane _Target) {
+        public CopyActionListener(JTextPane _Source, JTextPane _Target) {
             Source = _Source;
             Target = _Target;
         }
@@ -274,7 +279,7 @@ public class FileMove extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             if(Source.getText().equals(chooseMessage) || chooseMessage.equals(Target.getText())) {
-                statusLabel.setText("Choose a file and a directory");
+                statusLabel.setText(emptyPath);
                 return;
             }
             if(copyTask != null)
@@ -284,7 +289,7 @@ public class FileMove extends javax.swing.JFrame {
             File targetFile = new File(Target.getText());
             
             if(!sourceFile.exists()) {
-                statusLabel.setText("Source File does not exist!");
+                statusLabel.setText(notSourceFile);
                 return;
             }
             if(!sourceFile.isFile()) {

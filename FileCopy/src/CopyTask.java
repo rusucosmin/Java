@@ -63,6 +63,7 @@ public class CopyTask extends SwingWorker<Void, Integer> {
     @Override
     protected Void doInBackground() throws Exception {
         start = true;
+        pause = false;
         statusLabel.setVisible(true);
         setProgress(0);
         copyFile(Source, Target);
